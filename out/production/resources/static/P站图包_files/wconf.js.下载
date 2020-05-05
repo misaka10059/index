@@ -1,0 +1,676 @@
+//添加删除指定数组元素方法
+Array.prototype.indexOf = function(val) {
+    for (var i = 0; i < this.length; i++) {
+        if (this[i] == val) return i;
+    }
+    return -1;
+};
+Array.prototype.remove = function(val) {
+    var index = this.indexOf(val);
+        if (index > -1) {
+        this.splice(index, 1);
+    }
+};
+
+function getUrlParam(name) {
+       var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
+       var r = window.location.search.substr(1).match(reg);  //匹配目标参数
+
+       if (r != null)
+           return unescape(r[2]);
+       return null; //返回参数值
+   }
+function getCookie(name) {
+	var a, c = new RegExp("(^| )" + name + "=([^;]*)(;|$)");
+	if (a = document.cookie.match(c)) {
+		return unescape(decodeURI(a[2]))
+	} else {
+		return ""
+	}
+}
+function setCookie(name, value, time) {
+	var c = new Date();
+	c.setTime(c.getTime() + Number(time) * 3600 * 1000);
+	document.cookie = name + "=" + value + "; path=/;expires = " + c.toGMTString()
+}
+function setloc(key,value){
+        var curTime = new Date().getTime();
+        localStorage.setItem(key,JSON.stringify({data:value,time:curTime}));
+    }
+function getloc(key,exp = 0){
+	var data = localStorage.getItem(key);
+	if (data === undefined || data ===null || data ===""){
+		
+	}else{
+		var dataObj = JSON.parse(data);
+		if (exp !== 0 && new Date().getTime() - dataObj.time>exp) {
+			console.log('信息已过期');
+			return false;
+		}else{
+			var dataObjDatatoJson = dataObj.data;
+			return dataObjDatatoJson;
+		}
+	}
+}
+function isIE() {
+	if ( !! window.ActiveXObject || "ActiveXObject" in window) return true;
+	else return false
+}
+function live2dload() {
+    var modelJSON;
+	if(!localStorage.getItem('modelJSON')){
+		modelJSON = "/wp-content/themes/wpdx/assets/live2d/rand.php?v=0.0.1&_=" + Date.now();
+		localStorage.setItem('modelJSON', modelJSON);
+	}else{
+		modelJSON = localStorage.getItem('modelJSON');
+	} 
+	loadlive2d("live2d", modelJSON, console.log('live2d','模型加载完成'));
+}
+
+function newGuid() {
+    var guid = "";
+    for (var i = 1; i <= 32; i++){
+      var n = Math.floor(Math.random()*16.0).toString(16);
+      guid +=   n;
+      if((i==8)||(i==12)||(i==16)||(i==20))
+        guid += "-";
+    }
+    return guid;    
+}
+
+//分类跳页
+function jump_page_cat(){
+    var jump_path = window.location.pathname.match(/(\/category\/([a-zA-Z-\/](?!page))+)/)[0];
+    if( jump_path.charAt(jump_path.length - 1) !== '/' ){
+        jump_path += '/';
+    }
+    var to_url = window.location.protocol+'//'+window.location.host+'/'+jump_path+'page/'+$('.jump-page').val();
+    $('#page-jump-button').attr('href',to_url);
+}
+
+//评论点赞
+function checked_ulike_btn(){
+    var comment_list = getloc('comment_list');
+    if(!comment_list){
+        comment_list = new Array();
+    }
+    comment_list.forEach(function(item) {
+        $('input[data-ulike-id="'+item+'"]').prop("checked", true);
+    })
+    
+    $('.wp_ulike_btn.wp_ulike_put_image').click(function(){
+        var comment_id = $(this).data("ulike-id");
+        if (comment_list.includes(comment_id)){
+          comment_list.remove(comment_id);
+          setloc('comment_list', comment_list);
+        } else {
+          comment_list.push(comment_id);
+          setloc('comment_list', comment_list);
+        }
+    });
+}
+
+//秒传链接
+function parseMc(code) {
+    code = Base64.decode(code);
+    return code.split('\n').map(function(z) {
+        return z.trim().match(/([\dA-F]{32})#([\dA-F]{32})#([\dA-F]{8})#([\dA-F]{32})#([\d]{1,20})#([\s\S]+)/);
+    }).filter(function(z) {
+        return z;
+    }).map(function(info) {
+        return {
+            md5: info[1],
+            md5s: info[2],
+            crc32: info[3],
+            ed2k: info[4],
+            size: info[5],
+            name: info[6]
+        };
+    });
+};
+
+function toMcLink(arr){
+    var str = '';
+    for (const v of arr) {
+        str += v['md5']+"#"+v['md5s']+"#"+v['size']+"#"+v['name']+"\n"
+    }
+    return Base64.encode(str);
+}
+
+function toEd2k(arr){
+    var str = '';
+    for (const v of arr) {
+        str += "ed2k://|file|"+v['name']+"|"+v['size']+"|"+v['ed2k']+"|\n";
+    }
+    return str;
+}
+//收藏
+function shoucang(sTitle,sURL) { try { window.external.addFavorite(sURL, sTitle); } catch (e) { try { window.sidebar.addPanel(sTitle, sURL, ""); } catch (e) { alert("加入收藏失败，请使用Ctrl+D进行添加"); } } }
+
+//EEHHTT
+/* if(document.getElementById("down-tipid")!=undefined){
+var downstr = document.getElementById("down-tipid").innerHTML; 
+var exhentai = /exhentai.org\/((.+?))">/ig; 
+var nyaa = /sukebei\.nyaa\.[a-zA-Z]{2}\/((.+?))">/ig; 
+var nyaa_s = downstr.indexOf("nyaa.eehhtt.com");
+if(nyaa_s >= 0){
+     console.log("OK2");
+}else if(nyaa_s == -1){
+   downstr.replace(nyaa, function() { 
+		document.getElementById("down-tipid").innerHTML = '' + downstr + '<a target="_blank" href="http://nyaa.eehhtt.com/' + arguments[1] + '">NY</a>';
+});
+}
+} */
+
+//评论链接
+jQuery(document).ready(function($) {
+    //提交刷新
+    var urlPath = "/woyouyigenxiannvbang" + window.location.pathname;
+    $("#refresh").bind("click",function(){$.get(urlPath);alert("请求已提交，点击确定刷新网页。");window.location.reload();});
+    $(".footer-nav ul li a[href='#']").bind("click",function(){$.get(urlPath);alert("请求已提交，点击确定刷新网页。");window.location.reload();});
+    //$(".dropdown-menu .login-btn").bind("click",function(){$.get(urlPath);});
+    
+    //评论表情
+    $('img.wp-smiley').removeAttr('style');
+    jQuery("a[rel='external'],a[rel='external nofollow']").click(function(){window.open(this.href);return false});
+    
+    //文章图片
+    $(".entry img").removeAttr("width");
+    
+    //添加标签
+    var postID = $('#comment_post_ID').val();
+    if( postID > 0 ){
+    	var $tag = $(".entry-meta .post-tag");
+    	var addHtml = '<input type="text" class="tagInp" autocomplete="off" placeholder="按回车提交。" value="" style="display: none;"><span class="tagWarning" style="display: none;">标签不能包含“#,/”等特殊字符</span><a href="javascript:void(0)" class="tagAdd">+添加</a>';
+    	$tag.append(addHtml);
+    	$tag.on("click", ".tagAdd", function() {
+    		if( $(".entry-meta .post-tag a[rel=tag]").length < 10){
+    			$tag.find(".tagInp").show().focus();
+    			$(this).hide();
+    		} else {
+    			$(this).hide();
+    			$tag.find(".tagWarning").text('最多存在10个标签');
+    			$tag.find(".tagWarning").show();
+    		}
+    	});
+    	$tag.on("keyup", ".tagInp", function(e) {
+    			var a = e.keyCode || e.which;
+    			var e = $(this).val();
+    			if (/\#|\,|\//.test(e)){
+    				$tag.find(".tagWarning").show();
+    			} else {
+    				if( 13 == a && $(".tagInp").trigger("blur") ){
+    					var tagHtml = '<a href="/tag/'+e+'" class="addTag" rel="tag">'+e+'</a>';
+    					var postData = { action:"add_post_tag", post_id:postID, tag:e };
+    					$tag.find(".tagWarning").hide();
+    					$(this).hide();
+    					$(this).attr("value","");
+    					$('.post-tag a[rel=tag]:last').after(tagHtml);
+    					$.ajax({
+    						url: "/wp-admin/admin-ajax.php",
+    						type: "POST",
+    						contentType: 'application/x-www-form-urlencoded',
+    						data: postData,
+    						dataType: "json",
+    						timeout: 10000,
+    						success: function(data) {
+    						    switch(data.status) {
+                                    case '200':
+                                        console.log('标签添加成功：'+e);
+                                        break;
+                                    case '500':
+                                        alert("标签不能为空");
+                                        break;
+                                    case '501':
+                                        alert("标签已满");
+                                        break;
+                                    case '502':
+                                        alert("没有权限添加标签\n需要投稿权限才能添加");
+                                        break;
+                                    default:
+                                        默认代码块
+                                }
+    						},
+    						error: function(err) {
+    							console.log('Error :-S', err);
+    						}
+    					});
+    				}
+    		}
+    	});
+    	$tag.on("blur", ".tagInp", function() {
+    		$tag.find(".tagWarning").hide();
+    		$(this).hide();
+    		$tag.find(".tagAdd").show();
+    	});
+    }
+    
+    //联系邮箱
+    eval(function(p,a,c,k,e,r){e=String;if(!''.replace(/^/,String)){while(c--)r[c]=k[c]||c;k=[function(e){return r[e]}];e=function(){return'\\w+'};c=1};while(c--)if(k[c])p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c]);return p}('$(\'.0\').1(\'2@3.4\');',5,5,'contact|text|acgget|gmail|com'.split('|'),0,{}))
+    
+    //评论管理
+    var get_name = getloc('name',1000*60*60*24*30);
+    var author_name=$('.post-meta span a:first').text();
+    if (get_name === undefined || get_name ===null || get_name ==="" || get_name ===false ) {
+        $('.report_comment').click(function(){
+            if(confirm("确认要举报此评论吗？")){
+                var comment_id = $(this).data("commentid");
+            	var comment_data = { action:"report_comment", comment_id:comment_id }
+            	$(this).removeClass();
+            	$(this).addClass("report_over");
+            	$(this).text('[已提交]');
+            	$.ajax({
+            		url: "/wp-admin/admin-ajax.php",
+            		type: "POST",
+            		contentType: 'application/x-www-form-urlencoded',
+            		data: comment_data,
+            		dataType: "json",
+            		timeout: 10000,
+            		success: function(data) {
+            			if( data.status === "200"){
+            				$(this).text('[提交成功]');
+            			} else {
+            				$(this).text('[参数错误]');
+            			}
+            		},
+            		error: function(err) {
+            			$(this).text('[提交超时]');
+            			console.log('Error :-S', err);
+            		}
+            	});			
+    		} else {
+            	
+    		}
+        });
+    } else {
+        if ( get_name[0] === author_name || get_name[0] === "Qa" || get_name[0] === "sexto sounds" ){
+            $('.report_comment').hide();
+            $('.comment_remove_link').show();
+        }
+    }
+    $('.comment-reply-link').click(function(){
+        event.preventDefault();
+    	var comment_id = $(this).data("commentid");
+    	var comment_belowelement = $(this).data("belowelement");
+    	var comment_postid = $(this).data("postid");
+    	addComment.moveForm( comment_belowelement, comment_id, "respond", comment_postid )
+    });
+    
+    //验证码
+    if ( window.location.pathname == "/user/register" || window.location.pathname == "/102499.html"){
+        //var get_vcode = getloc('vcode',1000*60*60*1);
+        //if (get_vcode === undefined || get_vcode ===null || get_vcode ==="" || get_vcode ===false ) {
+        //    vcode_Guid = JSON.stringify([newGuid()]);
+        //    setloc('vcode', vcode_Guid);
+        //}
+        if($("input[name='submit']")[0]){
+            $(".cmpuser-form input[name='submit']").click(function(event){
+                var uPattern = /^[a-zA-Z0-9_-]{4,16}$/;
+                var userid = $('[name="username"]').val();
+                var nickname = $('[name="nickname"]').val();
+                var email = $('[name="email"]').val();
+                var invitioncode = $('[name="invitioncode"]').val();
+                //get_vcode = getloc('vcode',1000*60*60*1);
+                if (userid == "") {           
+                      alert("用户名不能为空");               
+                      event.preventDefault();            
+                    } else if (userid.length < 4 || userid.length >16) {
+                      alert("用户名至少4个字符，至多16个字符。");               
+                      event.preventDefault();
+                    } else if (!uPattern.test(userid)) {
+                		alert("用户名只能是字母数字，不能有中文!");
+                		event.preventDefault();
+                }
+                if (nickname == "") {
+                    alert("昵称不能为空!");
+                    event.preventDefault();
+                }
+                if (email == "") {
+                    alert("邮箱不能为空!");
+                    event.preventDefault();
+                }
+                if (invitioncode == "") {
+                    alert("邀请码不能为空");
+                    event.preventDefault();
+                }
+            })
+        }
+        //if($('.verification_code')[0]){get_vcode = getloc('vcode',1000*60*60*1);$('.verification_code').text(get_vcode[0]);}
+    }
+    
+    //磁力
+    $(".magnetdl").each(function(){
+        var magnet = $(this).text();
+        if(magnet.indexOf("magnet:?xt=") === 0){
+    		if(magnet.indexOf("&dn=") > 0){
+    			var magnet_text = magnet.split("&dn=")[0];
+    		} else{
+    			magnet_text = magnet;
+    		}
+           $(this).html('<a href='+magnet+'  target="_blank" rel="nofollow">'+magnet_text+'</a>');
+        }
+    });
+    
+    /*
+    **秒传按钮
+    */
+    
+    //标准秒传
+    $(".paydown p.down-tip a[href*='pan.baidu.com/#bdlink=']").click(function(){
+        event.preventDefault();
+        var mc_link = $(this).attr('href');
+        var mc_reg = /.*\/#bdlink=(.*)/g;
+        var mc_code = mc_link.replace(mc_reg,"$1");
+        $('#modal-mcdown .ed2k_mc').hide();
+        $('#modal-mcdown-content a.bdpan_mc').attr('href', mc_link);
+        $('#modal-mcdown-content a.noscirp_mc').attr('href', 'https://bdpan.acgget.com/#bdlink='+mc_code);
+        $("#mc_viwe").data('code', mc_code);
+        MicroModal.show('modal-mcdown');
+    });
+    
+    //专用链接
+    $(".paydown p.down-tip a[href*='/#afmc=']").click(function(){
+        event.preventDefault();
+        var mc_link = $(this).attr('href');
+        var mc_reg = /\/#afmc=(.*)/g;
+        var mc_code = mc_link.replace(mc_reg,"$1");
+        var mc_arr = parseMc(mc_code);
+        var mc_bz = toMcLink(mc_arr);
+        var mc_ed2k = toEd2k(mc_arr);
+        
+        $('#modal-mcdown .ed2k_mc').show();
+        $('#modal-mcdown-content a.bdpan_mc').attr('href', 'https://pan.baidu.com/#bdlink='+mc_bz);
+        $('#modal-mcdown-content a.noscirp_mc').attr('href', 'https://bdpan.acgget.com/#bdlink='+mc_bz);
+        $("#mc_viwe").data('code', mc_bz);
+        $("#mc_viwe").data('ed2k', mc_ed2k);
+        MicroModal.show('modal-mcdown');
+    });
+    
+    //查看秒传代码
+    $("#modal-mcdown .code_mc").click(function(){
+        var viwe_text = $('#mc_viwe').data('code');
+        $('#mc_viwe').val(Base64.decode(viwe_text));
+        MicroModal.close('modal-mcdown');
+        MicroModal.show('modal-mcviwe');
+    });
+    
+    //查看ed2k
+    $("#modal-mcdown .ed2k_mc").click(function(){
+        var viwe_text = $('#mc_viwe').data('ed2k');
+        $('#mc_viwe').val(viwe_text);
+        MicroModal.close('modal-mcdown');
+        MicroModal.show('modal-mcviwe');
+    });
+    
+    
+    //按钮
+    $('.btn-down input').click(function(){
+        event.preventDefault(); 
+        $(this).select();
+    });
+    
+    //评论点赞
+    checked_ulike_btn();
+    
+    //排版错位 
+    $('.span6.column2').each(function($k){
+    	$(this).removeClass();
+    	$(this).addClass("span6 column2");
+    	if($k == 0 || $k == 2){
+    		$(this).addClass("first-column");
+    	}
+    })
+    
+    if (screen && screen.width < 800) {
+        $(".btn-down").each(function(index, value) {
+            if( $(this).children('input').length > 0 ) {
+                $(this).addClass('btn-mobi');
+            }
+        });
+    }
+    
+    if (screen && screen.width > 800) {
+        
+        if( $(".btn-down").length > 0 ) {
+            $(".btn-down").mouseover(function(){
+            	var dlpass = $(this).children('input');
+            	if ( dlpass.length > 0 ) {
+            	    var input_size = $(dlpass).val().length;
+            		$(dlpass).css('width', input_size + 'em');
+            		$(dlpass).show(300);
+            		$(dlpass).select();
+            	}
+            });
+            $(".btn-down").mouseleave(function(){
+              $(this).children('input').hide(300);
+            });
+        }
+        
+        //下雪
+        //if ( window.location.pathname == "/"){
+        //    $.getScript("/wp-content/themes/wpdx/js/snow.js?v1.2");
+        //}
+        if (!isIE()) {
+        	if (getCookie('danmu') == 'false') {
+        		$('body').append('<div id="danmu" title="弹幕控制"><span>开启</span><br>弹幕</div>')
+        	} else {
+        		$('body').append('<div id="danmu" title="弹幕控制"><span>关闭</span><br>弹幕</div>')
+        	}
+        	if (getCookie('mengniang') == 'false') {
+        		$('body').append('<div id="live2d-manage" title="萌娘控制"><span>开启</span><br>萌娘</div>')
+        		$('#landlord').hide();
+        	} else {
+        		$('body').append('<div id="live2d-manage" title="萌娘控制"><span>关闭</span><br>萌娘</div>')
+        		live2dload();
+        	}
+        	
+        	$('#danmu').on('click', function() {
+        		if (getCookie('danmu') == 'false') {
+        			if ($('#danmu span').text() == '关闭') {
+        				setCookie('danmu', 'false');
+        				$.fn.barrager.removeAll();
+        				$('#danmu span').text('开启')
+        			} else if ($('#danmu span').text() == '开启') {
+        				adddammu();
+        				setCookie('danmu', 'true');
+        				$('#danmu span').text('关闭')
+        			}
+        		} else {
+        			if ($('#danmu span').text() == '开启') {
+        				adddammu();
+        				setCookie('danmu', 'true');
+        				$('#danmu span').text('关闭')
+        			} else if ($('#danmu span').text() == '关闭') {
+        				$.fn.barrager.removeAll();
+        				setCookie('danmu', 'false');
+        				$('#danmu span').text('开启')
+        			}
+        		}
+        	});
+        	
+        	$('#live2d-manage').on('click', function() {
+        		if (getCookie('mengniang') == 'false') {
+        			if ($('#live2d-manage span').text() == '关闭') {
+        				setCookie('mengniang', 'false');
+        				window.setTimeout(function() {$('#landlord').hide();}, 1300);
+        				$('#live2d-manage span').text('开启')
+        			} else if ($('#live2d-manage span').text() == '开启') {
+        				setCookie('mengniang', 'true');
+        				$('#live2d-manage span').text('关闭')
+        				window.setTimeout(function() {window.location.reload();}, 500);
+        			}
+        		} else {
+        			if ($('#live2d-manage span').text() == '开启') {
+        				setCookie('mengniang', 'true');
+        				$('#live2d-manage span').text('关闭')
+        				window.setTimeout(function() {window.location.reload();}, 500);
+        			} else if ($('#live2d-manage span').text() == '关闭') {
+        				window.setTimeout(function() {$('#landlord').hide();}, 1300);
+        				setCookie('mengniang', 'false');
+        				$('#live2d-manage span').text('开启')
+        			}
+        		}
+        	});
+        }
+    	//imgload
+		if ($('img').length > 0) {
+			$('img').imgPreview({
+				imgCSS: {
+					// Limit preview size:
+					'max-width': 500,
+					'max-height': 500,
+					padding: "5px",
+					border: "1px solid #eee",
+					'z-index':'99999',
+					background: "#fcfcfc"
+				},
+				srcAttr: "data-original",
+				preloadImages: false,
+				// When container is shown:
+                onShow: function(link){
+                    // Animate link:
+                    $(link).stop().animate({opacity:0.4});
+                    // Reset image:
+                    $('img', this).stop().css({opacity:0});
+                    //$('.tooltip').remove();
+                },
+                // When image has loaded:
+                onLoad: function(){
+                    // Animate image
+                    $(this).animate({opacity:1}, 300);
+                },
+                // When container hides: 
+                onHide: function(link){
+                    // Animate link:
+                    $(link).stop().animate({opacity:1});
+                }
+			});
+		} 
+		
+    	//danmu
+    	function rd (n,m) {
+            var c = m-n+1; 
+            return Math.floor(Math.random() * c + n);
+        }
+        function  ObjStory(info,href) {
+        	this.img = '';
+        	this.info = info;
+        	this.href = href;
+        	this.close = true;
+        	this.speed = 20;
+        	this.bottom= rd(1,300);
+        	this.color = '#ffffff';
+        	this.old_ie_color = '#ffffff';
+        }
+        
+        if( $(".commentlist").length > 0 ) {
+            var textdata = $(".commentlist li p");
+            var imgdata = $(".comment-author img");
+            var urldata = $(".commentlist li");
+            var dmdata = [];
+            for (var i=0;i<textdata.length;i++) {
+            	dmdata.push(new ObjStory(textdata[i].innerText,"#"+urldata[i].id));
+            }
+            function adddammu() {
+            //每条弹幕发送间隔
+            var looper_time=1000;
+            var items=dmdata;
+            //弹幕总数
+            var total=dmdata.length;
+            //是否首次执行
+            var run_once=true;
+            //弹幕索引
+            var index=0;
+            //先执行一次
+            barrager();
+            	function  barrager(){
+            		if (getCookie('danmu') != 'false' && $(".commentlist").length > 0 ) {
+            			if(run_once){
+            				//如果是首次执行,则设置一个定时器,并且把首次执行置为false
+            				looper=setInterval(barrager,looper_time);                
+            				run_once=false;
+            			}
+            			//发布一个弹幕
+            			$('body').barrager(items[index]);
+            			//索引自增
+            			index++;
+            			//所有弹幕发布完毕，清除计时器。
+            			if(index == total){
+            				clearInterval(looper);
+            				return false;
+            			}
+            		}
+            	}
+            }
+            var danmu_v = true;
+        	$(window).scroll(function () {
+        		var a = $(".commentlist").offset().top;
+        		if (danmu_v == true && a >= $(window).scrollTop() && a < ($(window).scrollTop() + $(window).height())) {
+        			setInterval(function () {$.fn.barrager.removeAll();},500);
+        			danmu_v = false;
+        		}
+        	});
+        	adddammu();
+        }
+        
+    	/*TIP提示
+		$('a,span,div').simpletooltip({
+					position: 'left',
+					themes: {
+						pink: {
+							color: 'red',
+							border_color: 'red',
+							background_color: 'pink',
+							border_width: 4
+						},
+						brazil: {
+							color: 'yellow',
+							background_color: 'green',
+							border_color: 'yellow',
+							border_width: 4
+						}
+					}
+			});
+			*/
+	} else {
+	    /*
+	    if ( window.location.pathname == "/"){
+	    function r(a){return a*Math.random()}function s(){return document.createElement("canvas")}function u(){var a,d,e,f;for(p+=0.01,d=Math.sin(p),a=0;m>a;a++){f=o[a],e=Math.sin(4*p+a),f[1]+=f[2]/2+(2+e),f[0]+=6*(d+e/2)/(10/f[2]),f[1]>c&&(f[1]=-n,f[0]=r(b)),(f[0]>b||f[0]<-n)&&(f[0]=d>0?-n:b),o[a]=f}}function t(){var a,d;for(d=0;m>d;d++){a=0.6*m>d?0:0.8*m>d?1:0.9*m>d?2:0.98*m>d?3:4,o[d]=[r(b),r(c),a]}}function w(){b=window.innerWidth,c=window.innerHeight,void 0!==j&&(j.width=b,j.height=c,m=b*c/6000,l=k.createLinearGradient(0,0,0,c),t())}function t(){var a,d;for(d=0;m>d;d++){a=0.6*m>d?0:0.8*m>d?1:0.9*m>d?2:0.98*m>d?3:4,o[d]=[r(b),r(c),a]}}function v(){var a;for(k.fillStyle=l,k.clearRect(0,0,b,c),k.beginPath(),a=0;m>a;a++){k.drawImage(i[o[a][2]],o[a][0],o[a][1])}k.fill(),u()}function w(){b=window.innerWidth,c=window.innerHeight,void 0!==j&&(j.width=b,j.height=c,m=b*c/6000,l=k.createLinearGradient(0,0,0,c),t())}function x(){var a=!1;try{a=1}catch(b){}return a?(window.addEventListener("resize",w,!1),j=document.createElement("canvas"),j.style.position="fixed",j.style.top="0px",j.style.left="0px",j.style.zIndex=5000,j.style.pointerEvents="none",j.id="canvas_snow",document.body.appendChild(j),k=j.getContext("2d"),k.strokeStyle="none",d=s(),b=s(),f=s(),g=s(),h=s(),i=[d,b,f,g,h],y({canvas:d,width:0.4*n,height:0.4*n,color:"#FFF",soft:0.05}),y({canvas:b,width:0.5*n,height:0.5*n,color:"#FFF",soft:0.05}),y({canvas:f,width:0.6*n,height:0.6*n,color:"#FFF",soft:0.3}),y({canvas:g,width:0.8*n,height:0.8*n,color:"#FFF",soft:0.2}),y({canvas:h,width:n,height:n,color:"#FFF",soft:0.05}),w(null),snowTimer=setInterval(function(){q(v)},50),void 0):!1}function z(a,b){var c,d,e;return a=a.replace(/^s*#|s*$/g,""),3===a.length&&(a=a.replace(/([0-9a-fA-F])/g,"$1$1")),d=parseInt(a.substr(2,2),16),e=parseInt(a.substr(4,2),16),c=parseInt(a.substr(0,2),16),"rgba("+c+", "+d+", "+e+", "+b+")"}function y(a){var b,c,d,e,f,g,h,i,j;d=a.width||30,e=a.height||30,f=d/2,g=e/2,i=a.color||"#FFF",h=a.soft||0,b=a.canvas,b.width=d,b.height=d,c=b.getContext("2d"),c.clearRect(0,0,d,e),j=c.createRadialGradient(f,g,0,f,g,f),j.addColorStop(0,i),j.addColorStop(0.1,i),j.addColorStop(0.85,z(i,h)),j.addColorStop(1,z(i,0)),c.fillStyle=j,c.fillRect(0,0,d,e)}var b,c,d,e,f,g,h,i=[],j,k,l,m,n=20,o=[],p=0,q=function(){return window.requestAnimationFrame||window.webkitRequestAnimationFrame||window.mozRequestAnimationFrame||window.oRequestAnimationFrame||window.msRequestAnimationFrame||function(a){window.setTimeout(a,62.5)}}();x();
+	    }
+	    */
+	}
+	
+	if ( window.location.pathname == "/user/pm" ){
+	    if(getUrlParam('to') == "qa" && getUrlParam('report')){
+    	    $('#message_title').val('[举报文章]文章编号：'+getUrlParam('report'));
+    	    $.getScript("//cdnjs.cloudflare.com/ajax/libs/tinymce/4.9.6/jquery.tinymce.min.js", function(){
+                tinymce.activeEditor.execCommand('mceInsertContent', false, '举报原因：');
+            });
+	    }
+	    if(getUrlParam('mode') == 'applyAuthor'){
+    	    $('#message_title').val('[申请作者]');
+    	    $.getScript("//cdnjs.cloudflare.com/ajax/libs/tinymce/4.9.6/jquery.tinymce.min.js", function(){
+                tinymce.activeEditor.execCommand('mceInsertContent', false, '<p>最后通过审核的文章链接：</p><p>申请留言：</p>');
+            });
+	    }
+    }
+    
+});
+//fuck you
+/* function inlo_nodebug() {
+	while (1) {}
+}
+function console() {
+ 	if (window.console && (console.firebug || console.table && /firebug/i.test(console.table())) || typeof opera == "object" && typeof opera.postError == "function" && console.profile.length > 0) {
+		inlo_nodebug()
+	}
+	if (typeof console.profiles == "object" && console.profiles.length > 0) {
+		inlo_nodebug()
+	}
+}
+console();
+window.onresize = function() {
+	if (window.outerHeight - window.innerHeight > 200 || window.outerWidth - window.innerWidth > 200) {
+		inlo_nodebug()
+	}
+};  */
